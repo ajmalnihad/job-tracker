@@ -1,0 +1,9 @@
+.card-hover {
+    cursor: pointer;
+    transform-origin: center;
+}
+
+.card-hover:hover {
+    transform: translateY(-4px) scale(1.01);
+    box-shadow: var(--shadow-xl);
+}
