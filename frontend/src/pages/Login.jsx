@@ -47,7 +47,7 @@ const Login = () => {
         <div className="auth-container">
             <div className="auth-card card">
                 <div className="auth-header">
-                    <h1 className="gradient-text">Welcome Back</h1>
+                    <h1 className="gradient-text">Welcome to Job Tracker</h1>
                     <p className="text-muted">Login to your Job Tracker account</p>
                 </div>
 
