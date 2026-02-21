@@ -1,7 +1,7 @@
 // API constants and configuration
-// Use empty string to make relative requests through Vite proxy
-// Vite proxy is configured in vite.config.js to forward /api to http://localhost:8000
-export const API_BASE_URL = import.meta.env.VITE_API_URL || '';
+// In production (Vercel): VITE_API_URL = https://your-app.onrender.com
+// In local dev: VITE_API_URL = http://localhost:8000 (set in .env.local)
+export const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
 // Application status options
 export const STATUS_OPTIONS = [

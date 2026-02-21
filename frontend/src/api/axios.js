@@ -5,10 +5,10 @@
 import axios from 'axios';
 import { API_BASE_URL, ACCESS_TOKEN_KEY, REFRESH_TOKEN_KEY } from '../utils/constants';
 
-// Create axios instance with empty baseURL to use Vite proxy
-// Vite proxy will forward /api/* requests to http://localhost:8000
+// Create axios instance pointing to the backend (Render in production, localhost in dev)
+// Controlled by VITE_API_URL environment variable
 const axiosInstance = axios.create({
-    baseURL: '',
+    baseURL: API_BASE_URL,
     // Don't set Content-Type here - let it be set per request
     // This allows multipart/form-data for file uploads
 });
@@ -41,8 +41,8 @@ axiosInstance.interceptors.response.use(
 
             if (refreshToken) {
                 try {
-                    // Try to refresh the token
-                    const response = await axios.post(`${API_BASE_URL}/api/auth/refresh/`, {
+                    // Try to refresh the token (use axiosInstance so baseURL is applied)
+                    const response = await axiosInstance.post('/api/auth/refresh/', {
                         refresh: refreshToken,
                     });
 
