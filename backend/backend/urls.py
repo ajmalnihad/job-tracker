@@ -8,7 +8,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    path('job-portal-secure-admin/', admin.site.urls),
     path('api/auth/', include('accounts.urls')),
     path('api/applications/', include('applications.urls')),
     path('api/resumes/', include('resumes.urls')),
