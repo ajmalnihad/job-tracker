@@ -1,0 +1,74 @@
+@keyframes shimmer {
+    0% {
+        background-position: -468px 0;
+    }
+
+    100% {
+        background-position: 468px 0;
+    }
+}
+
+.skeleton-glow {
+    animation: shimmer 1.5s infinite linear;
+    background: linear-gradient(to right,
+            var(--color-bg-secondary, #edeef1) 8%,
+            var(--color-border, #f6f7f8) 18%,
+            var(--color-bg-secondary, #edeef1) 33%);
+    background-size: 800px 104px;
+}
+
+.skeleton-card {
+    background: var(--color-bg-primary, #ffffff);
+    border: 1px solid var(--color-border, #e5e7eb);
+    border-radius: 12px;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 250px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+.skeleton-card .skeleton-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 1.5rem;
+}
+
+.skeleton-title {
+    height: 24px;
+    width: 150px;
+    border-radius: 4px;
+    margin-bottom: 0.5rem;
+}
+
+.skeleton-text {
+    height: 16px;
+    width: 100%;
+    border-radius: 4px;
+    margin-bottom: 0.5rem;
+}
+
+.skeleton-badge {
+    height: 24px;
+    width: 80px;
+    border-radius: 12px;
+}
+
+.skeleton-card .skeleton-body {
+    flex-grow: 1;
+    margin-bottom: 1.5rem;
+}
+
+.skeleton-card .skeleton-footer {
+    display: flex;
+    gap: 1rem;
+    border-top: 1px solid var(--color-border, #e5e7eb);
+    padding-top: 1.25rem;
+}
+
+.skeleton-button {
+    height: 38px;
+    flex: 1;
+    border-radius: 6px;
+}

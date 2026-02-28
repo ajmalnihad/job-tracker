@@ -10,6 +10,8 @@ import Card from '../components/common/Card';
 import Button from '../components/common/Button';
 import Modal from '../components/common/Modal';
 import Input from '../components/common/Input';
+import SkeletonLoader from '../components/common/SkeletonLoader';
+import EmptyState from '../components/common/EmptyState';
 import { formatDate } from '../utils/helpers';
 import { resumesAPI } from '../api/resumes';
 import './ApplicationsPage.css';
@@ -20,7 +22,12 @@ const ApplicationsPage = () => {
     const [resumes, setResumes] = useState([]);
     const [loading, setLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
     const [editingApp, setEditingApp] = useState(null);
+    const [viewingApp, setViewingApp] = useState(null);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [statusFilter, setStatusFilter] = useState('All');
+
     const [formData, setFormData] = useState({
         company_name: '',
         role: '',
@@ -81,7 +88,8 @@ const ApplicationsPage = () => {
         }
     };
 
-    const handleDelete = async (id) => {
+    const handleDelete = async (id, e) => {
+        if (e) e.stopPropagation();
         if (window.confirm('Are you sure you want to delete this application?')) {
             try {
                 await applicationsAPI.delete(id);
@@ -92,7 +100,8 @@ const ApplicationsPage = () => {
         }
     };
 
-    const openEditModal = (app) => {
+    const openEditModal = (app, e) => {
+        if (e) e.stopPropagation();
         setEditingApp(app);
         setFormData({
             company_name: app.company_name,
@@ -105,6 +114,11 @@ const ApplicationsPage = () => {
             notes: app.notes || '',
         });
         setIsModalOpen(true);
+    };
+
+    const openDetailsModal = (app) => {
+        setViewingApp(app);
+        setIsDetailsModalOpen(true);
     };
 
     const resetForm = () => {
@@ -131,11 +145,24 @@ const ApplicationsPage = () => {
             <div>
                 <Navbar />
                 <div className="applications-container">
-                    <div className="spinner" style={{ margin: '3rem auto' }}></div>
+                    <div className="applications-header">
+                        <h1 className="gradient-text">Applications</h1>
+                        <Button disabled>+ New Application</Button>
+                    </div>
+                    <div style={{ marginTop: '2rem' }}>
+                        <SkeletonLoader count={6} type="card" />
+                    </div>
                 </div>
             </div>
         );
     }
+
+    // Dynamic filtering based on search term and selected status
+    const filteredApplications = applications.filter(app => {
+        const matchesSearch = app.company_name.toLowerCase().includes(searchTerm.toLowerCase());
+        const matchesStatus = statusFilter === 'All' || app.status.toLowerCase() === statusFilter.toLowerCase();
+        return matchesSearch && matchesStatus;
+    });
 
     return (
         <div>
@@ -146,42 +173,165 @@ const ApplicationsPage = () => {
                     <Button onClick={openNewModal}>+ New Application</Button>
                 </div>
 
+                {/* Filters Section */}
+                <div className="filters-container" style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
+                    <div style={{ flex: '1', minWidth: '250px', position: 'relative' }}>
+                        <div style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-muted)' }}>
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                        </div>
+                        <input
+                            type="text"
+                            placeholder="Search by Company Name..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            className="input"
+                            style={{ margin: 0, width: '100%', paddingLeft: '2.5rem' }}
+                        />
+                    </div>
+                    <div style={{ minWidth: '200px' }}>
+                        <select
+                            className="input"
+                            value={statusFilter}
+                            onChange={(e) => setStatusFilter(e.target.value)}
+                            style={{ margin: 0, width: '100%', height: '100%', cursor: 'pointer' }}
+                        >
+                            <option value="All">All Statuses</option>
+                            <option value="applied">Applied</option>
+                            <option value="hr_contacted">HR Contacted</option>
+                            <option value="interview">Interview</option>
+                            <option value="offer">Offer</option>
+                            <option value="rejected">Rejected</option>
+                        </select>
+                    </div>
+                </div>
+
                 <div className="applications-grid">
-                    {applications.map(app => (
-                        <Card key={app.id} className="application-card">
-                            <div className="app-card-header">
+                    {filteredApplications.map(app => (
+                        <Card
+                            key={app.id}
+                            style={{
+                                display: 'flex',
+                                flexDirection: 'column',
+                                justifyContent: 'space-between',
+                                position: 'relative',
+                                transition: 'transform 0.2s, box-shadow 0.2s',
+                            }}
+                            className="application-card"
+                        >
+                            {/* Subtle Delete Icon Button (Top Right corner absolute positioning) / Prevent easy accidental clicks */}
+                            <button
+                                onClick={(e) => handleDelete(app.id, e)}
+                                title="Delete application"
+                                style={{
+                                    position: 'absolute',
+                                    top: '1rem',
+                                    right: '1rem',
+                                    background: 'transparent',
+                                    border: 'none',
+                                    cursor: 'pointer',
+                                    padding: '0.4rem',
+                                    borderRadius: '50%',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    color: 'var(--color-text-muted)',
+                                    opacity: 0.6,
+                                    transition: 'all 0.2s ease',
+                                    zIndex: 10
+                                }}
+                                onMouseOver={(e) => {
+                                    e.currentTarget.style.color = 'var(--color-danger)';
+                                    e.currentTarget.style.backgroundColor = 'rgba(239, 68, 68, 0.1)';
+                                    e.currentTarget.style.opacity = 1;
+                                }}
+                                onMouseOut={(e) => {
+                                    e.currentTarget.style.color = 'var(--color-text-muted)';
+                                    e.currentTarget.style.backgroundColor = 'transparent';
+                                    e.currentTarget.style.opacity = 0.6;
+                                }}
+                                onFocus={(e) => {
+                                    e.currentTarget.style.color = 'var(--color-danger)';
+                                    e.currentTarget.style.opacity = 1;
+                                }}
+                                onBlur={(e) => {
+                                    e.currentTarget.style.color = 'var(--color-text-muted)';
+                                    e.currentTarget.style.opacity = 0.6;
+                                }}
+                                aria-label="Delete"
+                            >
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                            </button>
+
+                            <div className="app-card-header" style={{ paddingRight: '2.5rem' /* Leave space for delete button */ }}>
                                 <div>
-                                    <h3>{app.company_name}</h3>
-                                    <p className="text-muted">{app.role}</p>
+                                    <h3 style={{ marginBottom: '0.2rem', color: 'var(--color-text-title)' }}>{app.company_name}</h3>
+                                    <p className="text-muted" style={{ margin: 0, fontSize: '0.9rem' }}>{app.role}</p>
                                 </div>
-                                <span className={`badge badge-${app.status}`}>
-                                    {app.status.replace('_', ' ')}
+                                <span className={`badge badge-${app.status.toLowerCase()}`} style={{ marginTop: '0.5rem', display: 'inline-block' }}>
+                                    {app.status.replace('_', ' ').toUpperCase()}
                                 </span>
                             </div>
 
-                            <div className="app-card-details">
-                                <p><strong>Applied:</strong> {formatDate(app.applied_date)}</p>
-                                {app.follow_up_date && (
-                                    <p><strong>Follow-up:</strong> {formatDate(app.follow_up_date)}</p>
+                            <div className="app-card-details" style={{ margin: '1.5rem 0', flexGrow: 1 }}>
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem', fontSize: '0.9rem' }}>
+                                    <div>
+                                        <p style={{ margin: 0, color: 'var(--color-text-muted)', fontSize: '0.8rem' }}>Applied</p>
+                                        <p style={{ margin: 0, fontWeight: '500' }}>{formatDate(app.applied_date)}</p>
+                                    </div>
+                                    <div>
+                                        <p style={{ margin: 0, color: 'var(--color-text-muted)', fontSize: '0.8rem' }}>Follow-up</p>
+                                        <p style={{ margin: 0, fontWeight: '500' }}>{app.follow_up_date ? formatDate(app.follow_up_date) : '-'}</p>
+                                    </div>
+                                </div>
+                                {app.notes && (
+                                    <div style={{ marginTop: '1rem', padding: '0.8rem', backgroundColor: 'var(--color-bg-secondary)', borderRadius: '6px' }}>
+                                        <p className="text-sm text-muted" style={{ margin: 0, fontStyle: 'italic' }}>
+                                            "{app.notes.length > 80 ? app.notes.substring(0, 80) + '...' : app.notes}"
+                                        </p>
+                                    </div>
                                 )}
-                                {app.notes && <p className="text-sm text-muted">{app.notes.substring(0, 100)}...</p>}
                             </div>
 
-                            <div className="app-card-actions">
-                                <Button variant="ghost" onClick={() => openEditModal(app)}>Edit</Button>
-                                <Button variant="danger" onClick={() => handleDelete(app.id)}>Delete</Button>
+                            {/* Emphasized primary actions */}
+                            <div className="app-card-actions" style={{ display: 'flex', gap: '0.8rem', marginTop: 'auto', borderTop: '1px solid var(--color-border)', paddingTop: '1.25rem' }}>
+                                <Button
+                                    variant="primary"
+                                    onClick={() => openDetailsModal(app)}
+                                    style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem' }}
+                                >
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                                    View Details
+                                </Button>
+                                <Button
+                                    variant="ghost"
+                                    onClick={(e) => openEditModal(app, e)}
+                                    style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem', border: '1px solid var(--color-border)' }}
+                                >
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                                    Edit
+                                </Button>
                             </div>
                         </Card>
                     ))}
-                </div>
 
-                {applications.length === 0 && (
-                    <div className="text-center" style={{ marginTop: '3rem' }}>
-                        <p className="text-muted">No applications yet. Create one to get started!</p>
-                    </div>
-                )}
+                    {filteredApplications.length === 0 && (
+                        <div style={{ gridColumn: '1 / -1' }}>
+                            <EmptyState
+                                icon="🚀"
+                                title="No applications found"
+                                description={applications.length === 0
+                                    ? "You haven't added any applications yet. Add your first job to get started!"
+                                    : "We couldn't find any applications matching your current filters."
+                                }
+                                actionText={(searchTerm || statusFilter !== 'All') ? 'Clear Filters' : 'Add New Application'}
+                                onAction={(searchTerm || statusFilter !== 'All') ? () => { setSearchTerm(''); setStatusFilter('All'); } : openNewModal}
+                            />
+                        </div>
+                    )}
+                </div>
             </div>
 
+            {/* Edit/Create Modal */}
             <Modal
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
@@ -265,6 +415,78 @@ const ApplicationsPage = () => {
                         {editingApp ? 'Update' : 'Create'} Application
                     </Button>
                 </form>
+            </Modal>
+
+            {/* View Details Modal */}
+            <Modal
+                isOpen={isDetailsModalOpen}
+                onClose={() => setIsDetailsModalOpen(false)}
+                title="Application Details"
+            >
+                {viewingApp && (
+                    <div className="application-details">
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem' }}>
+                            <div>
+                                <h2 style={{ margin: '0 0 0.5rem 0', color: 'var(--color-text-title)' }}>{viewingApp.company_name}</h2>
+                                <h4 style={{ margin: 0, color: 'var(--color-text-muted)', fontWeight: 'normal' }}>{viewingApp.role}</h4>
+                            </div>
+                            <span className={`badge badge-${viewingApp.status.toLowerCase()}`}>
+                                {viewingApp.status.replace('_', ' ').toUpperCase()}
+                            </span>
+                        </div>
+
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.5rem', padding: '1rem', backgroundColor: 'var(--color-bg-secondary)', borderRadius: '8px' }}>
+                            <div>
+                                <p style={{ margin: '0 0 0.2rem 0', color: 'var(--color-text-muted)', fontSize: '0.85rem' }}>Applied Date</p>
+                                <p style={{ margin: 0, fontWeight: '500' }}>{formatDate(viewingApp.applied_date)}</p>
+                            </div>
+                            <div>
+                                <p style={{ margin: '0 0 0.2rem 0', color: 'var(--color-text-muted)', fontSize: '0.85rem' }}>Follow-up Date</p>
+                                <p style={{ margin: 0, fontWeight: '500' }}>{viewingApp.follow_up_date ? formatDate(viewingApp.follow_up_date) : 'N/A'}</p>
+                            </div>
+                        </div>
+
+                        {viewingApp.job_url && (
+                            <div style={{ marginBottom: '1.5rem' }}>
+                                <p style={{ margin: '0 0 0.2rem 0', color: 'var(--color-text-muted)', fontSize: '0.85rem' }}>Job URL</p>
+                                <a href={viewingApp.job_url} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--color-primary)', wordBreak: 'break-all' }}>
+                                    {viewingApp.job_url}
+                                </a>
+                            </div>
+                        )}
+
+                        <div style={{ marginBottom: '1.5rem' }}>
+                            <p style={{ margin: '0 0 0.5rem 0', color: 'var(--color-text-muted)', fontSize: '0.85rem' }}>Notes</p>
+                            <div style={{ padding: '1rem', backgroundColor: 'var(--color-bg-secondary)', borderRadius: '8px', borderLeft: '3px solid var(--color-primary)', minHeight: '80px' }}>
+                                {viewingApp.notes ? (
+                                    <p style={{ margin: 0, whiteSpace: 'pre-wrap' }}>{viewingApp.notes}</p>
+                                ) : (
+                                    <p style={{ margin: 0, color: 'var(--color-text-muted)', fontStyle: 'italic' }}>No notes added.</p>
+                                )}
+                            </div>
+                        </div>
+
+                        <div style={{ display: 'flex', gap: '1rem', marginTop: '2rem' }}>
+                            <Button
+                                variant="primary"
+                                style={{ flex: 1 }}
+                                onClick={() => {
+                                    setIsDetailsModalOpen(false);
+                                    openEditModal(viewingApp);
+                                }}
+                            >
+                                Edit Application
+                            </Button>
+                            <Button
+                                variant="ghost"
+                                style={{ flex: 1 }}
+                                onClick={() => setIsDetailsModalOpen(false)}
+                            >
+                                Close
+                            </Button>
+                        </div>
+                    </div>
+                )}
             </Modal>
         </div>
     );

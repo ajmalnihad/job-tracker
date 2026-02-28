@@ -1,7 +1,10 @@
 // API constants and configuration
 // In production (Vercel): VITE_API_URL = https://your-app.onrender.com
 // In local dev: VITE_API_URL = http://localhost:8000 (set in .env.local)
+
 export const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://job-tracker-iwj8.onrender.com';
+// export const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+
 
 // Application status options
 export const STATUS_OPTIONS = [
