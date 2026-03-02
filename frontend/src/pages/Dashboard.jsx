@@ -100,7 +100,7 @@ const Dashboard = () => {
                                     </thead>
                                     <tbody>
                                         {followUps.map((app, index) => (
-                                            <tr key={app.id} style={{ borderBottom: index === followUps.length - 1 ? 'none' : '1px solid var(--color-border)', backgroundColor: 'var(--color-bg-primary)', transition: 'background-color 0.2s', ':hover': { backgroundColor: 'var(--color-bg-secondary)' } }}>
+                                            <tr key={app.id} style={{ borderBottom: index === followUps.length - 1 ? 'none' : '1px solid var(--color-border)', transition: 'background-color 0.2s', ':hover': { backgroundColor: 'var(--color-bg-secondary)' } }}>
                                                 <td style={{ padding: '1.5rem 0.5rem' }}>
                                                     <strong style={{ color: 'var(--color-text-title)' }}>{app.company_name}</strong>
                                                 </td>
@@ -137,7 +137,7 @@ const Dashboard = () => {
                             <div className="empty-state" style={{
                                 textAlign: 'center',
                                 padding: '4rem 2rem',
-                                background: 'linear-gradient(145deg, var(--color-bg-secondary), var(--color-bg-primary))',
+                                background: 'rgba(17, 24, 39, 0.4)',
                                 borderRadius: '12px',
                                 border: '1px dashed var(--color-border)'
                             }}>

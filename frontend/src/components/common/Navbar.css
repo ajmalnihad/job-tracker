@@ -1,7 +1,8 @@
 .navbar {
-    background: rgba(30, 41, 59, 0.8);
-    backdrop-filter: blur(10px);
-    border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+    background: var(--bg-secondary);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--color-border);
     position: sticky;
     top: 0;
     z-index: 100;
@@ -35,11 +36,14 @@
     font-weight: 500;
     transition: var(--transition);
     position: relative;
+    padding-bottom: 0.25rem;
 }
 
 .nav-link:hover,
 .nav-link.active {
     color: var(--text-primary);
+    text-shadow: 0 0 8px rgba(255, 255, 255, 0.3);
+    /* Slight text glow on dark background */
 }
 
 .nav-link::after {
@@ -50,6 +54,8 @@
     width: 0;
     height: 2px;
     background: var(--gradient-primary);
+    box-shadow: 0 0 10px var(--primary-light);
+    /* Adds a vibrant neon glow */
     transition: var(--transition);
 }
 

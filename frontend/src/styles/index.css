@@ -1,51 +1,59 @@
 /* Modern, premium CSS with vibrant gradients and glassmorphism */
 
 :root {
-  /* Color Palette - Vibrant & Professional */
-  --primary: #6366f1;
-  --primary-dark: #4f46e5;
-  --primary-light: #818cf8;
-  --secondary: #ec4899;
-  --secondary-dark: #db2777;
-  --accent: #14b8a6;
-  --success: #10b981;
-  --warning: #f59e0b;
-  --danger: #ef4444;
-  
-  /* Neutral Colors */
-  --bg-primary: #0f172a;
-  --bg-secondary: #1e293b;
-  --bg-tertiary: #334155;
-  --text-primary: #f1f5f9;
+  /* Color Palette - Vibrant & Professional (Neon touches for Dark Mode) */
+  --primary: #818cf8;
+  --primary-dark: #6366f1;
+  --primary-light: #a5b4fc;
+  --secondary: #f472b6;
+  --secondary-dark: #ec4899;
+  --accent: #2dd4bf;
+  --success: #34d399;
+  --warning: #fbbf24;
+  --danger: #f87171;
+
+  /* Neutral Colors (Deep Space / Dark Blue) */
+  --bg-primary: #0a0f1c;
+  /* Deepest background */
+  --bg-secondary: rgba(17, 24, 39, 0.4);
+  /* Glassmorphism Base */
+  --bg-tertiary: rgba(31, 41, 55, 0.6);
+  --text-primary: #f8fafc;
   --text-secondary: #cbd5e1;
   --text-muted: #94a3b8;
-  
+  --color-border: rgba(255, 255, 255, 0.08);
+  /* Subtle glass border */
+
   /* Gradients */
-  --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  --gradient-secondary: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-  --gradient-accent: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-  --gradient-success: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
-  
+  --gradient-primary: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+  --gradient-secondary: linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%);
+  --gradient-accent: linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%);
+  --gradient-success: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+  --gradient-bg: radial-gradient(circle at top left, rgba(79, 70, 229, 0.15), transparent 40%),
+    radial-gradient(circle at bottom right, rgba(236, 72, 153, 0.1), transparent 40%),
+    #0a0f1c;
+  /* The dark mesh/space background */
+
   /* Spacing */
   --spacing-xs: 0.5rem;
   --spacing-sm: 1rem;
   --spacing-md: 1.5rem;
   --spacing-lg: 2rem;
   --spacing-xl: 3rem;
-  
+
   /* Border Radius */
   --radius-sm: 0.5rem;
   --radius-md: 1rem;
   --radius-lg: 1.5rem;
   --radius-full: 9999px;
-  
+
   /* Shadows */
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+  --shadow-xl: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
   --shadow-glow: 0 0 30px rgba(99, 102, 241, 0.3);
-  
+
   /* Transitions */
   --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -62,7 +70,8 @@ body {
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background: var(--bg-primary);
+  background: var(--gradient-bg);
+  background-attachment: fixed;
   color: var(--text-primary);
   line-height: 1.6;
   min-height: 100vh;
@@ -79,16 +88,16 @@ code {
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--bg-secondary);
+  background: rgba(10, 15, 28, 0.5);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--bg-tertiary);
+  background: rgba(255, 255, 255, 0.1);
   border-radius: var(--radius-full);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--primary);
+  background: rgba(255, 255, 255, 0.2);
 }
 
 /* App Container */
@@ -98,20 +107,34 @@ code {
   flex-direction: column;
 }
 
-/* Glassmorphism Card */
+/* Glassmorphism Card (Standard) */
 .card {
-  background: rgba(30, 41, 59, 0.7);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(148, 163, 184, 0.1);
+  background: rgba(17, 24, 39, 0.4);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   padding: var(--spacing-md);
   box-shadow: var(--shadow-lg);
   transition: var(--transition);
+  position: relative;
+  overflow: hidden;
+}
+
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
 }
 
 .card:hover {
-  transform: translateY(-2px);
+  transform: translateY(-4px);
   box-shadow: var(--shadow-xl);
+  border-color: rgba(255, 255, 255, 0.15);
 }
 
 /* Button Styles */
@@ -279,14 +302,37 @@ code {
 }
 
 /* Spacing Utilities */
-.mt-sm { margin-top: var(--spacing-sm); }
-.mt-md { margin-top: var(--spacing-md); }
-.mt-lg { margin-top: var(--spacing-lg); }
-.mb-sm { margin-bottom: var(--spacing-sm); }
-.mb-md { margin-bottom: var(--spacing-md); }
-.mb-lg { margin-bottom: var(--spacing-lg); }
-.p-md { padding: var(--spacing-md); }
-.p-lg { padding: var(--spacing-lg); }
+.mt-sm {
+  margin-top: var(--spacing-sm);
+}
+
+.mt-md {
+  margin-top: var(--spacing-md);
+}
+
+.mt-lg {
+  margin-top: var(--spacing-lg);
+}
+
+.mb-sm {
+  margin-bottom: var(--spacing-sm);
+}
+
+.mb-md {
+  margin-bottom: var(--spacing-md);
+}
+
+.mb-lg {
+  margin-bottom: var(--spacing-lg);
+}
+
+.p-md {
+  padding: var(--spacing-md);
+}
+
+.p-lg {
+  padding: var(--spacing-lg);
+}
 
 /* Loading Spinner */
 .spinner {
@@ -299,8 +345,13 @@ code {
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 /* Status Badges */
@@ -313,11 +364,30 @@ code {
   text-transform: capitalize;
 }
 
-.badge-applied { background: #3b82f6; color: white; }
-.badge-hr_contacted { background: #8b5cf6; color: white; }
-.badge-interview { background: #f59e0b; color: white; }
-.badge-offer { background: #10b981; color: white; }
-.badge-rejected { background: #ef4444; color: white; }
+.badge-applied {
+  background: #3b82f6;
+  color: white;
+}
+
+.badge-hr_contacted {
+  background: #8b5cf6;
+  color: white;
+}
+
+.badge-interview {
+  background: #f59e0b;
+  color: white;
+}
+
+.badge-offer {
+  background: #10b981;
+  color: white;
+}
+
+.badge-rejected {
+  background: #ef4444;
+  color: white;
+}
 
 /* Responsive Design */
 @media (max-width: 1024px) {
@@ -330,13 +400,13 @@ code {
   :root {
     font-size: 14px;
   }
-  
+
   .grid-2,
   .grid-3,
   .grid-4 {
     grid-template-columns: 1fr;
   }
-  
+
   .card {
     padding: var(--spacing-sm);
   }
@@ -348,6 +418,7 @@ code {
     opacity: 0;
     transform: translateY(10px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
