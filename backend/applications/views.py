@@ -14,6 +14,9 @@ from .serializers import (
 )
 from .permissions import IsOwner
 from .filters import ApplicationFilter
+from django.utils import timezone
+from datetime import timedelta
+from django.db.models import Q
 
 
 class ApplicationViewSet(viewsets.ModelViewSet):
@@ -38,6 +41,35 @@ class ApplicationViewSet(viewsets.ModelViewSet):
         elif self.action == 'update_status':
             return ApplicationStatusUpdateSerializer
         return ApplicationSerializer
+    
+    @action(detail=False, methods=['get'], url_path='follow-ups')
+    def follow_ups(self, request):
+        """Get applications needing follow-up today or tomorrow."""
+        import datetime
+        today = datetime.date.today()
+        tomorrow = today + datetime.timedelta(days=1)
+        
+        try:
+            # As explicitly requested, try strict __date extraction (works if DB field is DateTimeField)
+            applications = Application.objects.filter(
+                user=request.user,
+                follow_up_date__date__in=[today, tomorrow]
+            ).exclude(
+                status__in=['rejected', 'REJECTED', 'offer', 'OFFER']
+            ).order_by('follow_up_date')
+            # Evaluate to catch FieldError early
+            _ = len(applications)
+        except Exception:
+            # Fallback natively for models.DateField which doesn't support __date transform but matches cleanly via __in
+            applications = Application.objects.filter(
+                user=request.user,
+                follow_up_date__in=[today, tomorrow]
+            ).exclude(
+                status__in=['rejected', 'REJECTED', 'offer', 'OFFER']
+            ).order_by('follow_up_date')
+            
+        serializer = ApplicationListSerializer(applications, many=True)
+        return Response(serializer.data)
     
     @action(detail=True, methods=['patch'])
     def update_status(self, request, pk=None):

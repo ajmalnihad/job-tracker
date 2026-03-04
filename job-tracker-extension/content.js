@@ -312,13 +312,21 @@ if (!window.hasJobTrackerListener) {
             statusEl.textContent = '';
 
             try {
+                const today = new Date();
+                const year = today.getFullYear();
+                const month = String(today.getMonth() + 1).padStart(2, '0');
+                const day = String(today.getDate()).padStart(2, '0');
+                const todayDate = `${year}-${month}-${day}`;
+
                 const payload = {
                     company_name: comp,
                     role: role,
                     job_url: link,
                     status: 'applied',
-                    applied_date: new Date().toISOString().split('T')[0],
-                    follow_up_date: fwup
+                    applied_date: todayDate,
+                    follow_up_date: fwup,
+                    resume: '',
+                    notes: ''
                 };
 
                 // Send message to background script to bypass CSP restrictions

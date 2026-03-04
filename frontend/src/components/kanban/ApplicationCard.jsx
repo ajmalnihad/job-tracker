@@ -19,8 +19,13 @@ const ApplicationCard = ({ application }) => {
 
     const style = {
         transform: CSS.Translate.toString(transform),
-        opacity: isDragging ? 0.5 : 1,
+        opacity: isDragging ? 0.6 : 1,
         cursor: isDragging ? 'grabbing' : 'grab'
+    };
+
+    const handlePointerDown = (e) => {
+        // Stop drag events triggering on the explicit button wrapper
+        e.stopPropagation();
     };
 
     return (
@@ -31,10 +36,24 @@ const ApplicationCard = ({ application }) => {
             {...listeners}
             className={`application-card ${isDragging ? 'dragging' : ''}`}
         >
-            <h4>{application.company_name}</h4>
-            <p className="role">{application.role}</p>
-            <div className="card-footer">
-                <span className="date">Applied: {formatDate(application.applied_date)}</span>
+            <div className="card-content">
+                <h4 className="company-name" title={application.company_name}>{application.company_name}</h4>
+                <p className="role" title={application.role}>{application.role}</p>
+                <div className="card-footer">
+                    <span className="date">{formatDate(application.applied_date)}</span>
+                    {application.source_url && (
+                        <div onPointerDown={handlePointerDown} className="view-job-container">
+                            <a
+                                href={application.source_url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="view-job-btn"
+                            >
+                                View Job
+                            </a>
+                        </div>
+                    )}
+                </div>
             </div>
         </div>
     );

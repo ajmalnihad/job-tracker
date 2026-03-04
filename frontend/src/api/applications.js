@@ -10,6 +10,11 @@ export const applicationsAPI = {
         return axiosInstance.get('/api/applications/', { params });
     },
 
+    // Get follow-up applications for today and tomorrow
+    getFollowUps: () => {
+        return axiosInstance.get('/api/applications/follow-ups/');
+    },
+
     // Get single application
     getById: (id) => {
         return axiosInstance.get(`/api/applications/${id}/`);
