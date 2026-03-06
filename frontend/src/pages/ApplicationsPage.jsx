@@ -28,16 +28,26 @@ const ApplicationsPage = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState('All');
 
-    const [formData, setFormData] = useState({
-        company_name: '',
-        role: '',
-        job_url: '',
-        status: 'applied',
-        applied_date: '',
-        follow_up_date: '',
-        resume: '',
-        notes: '',
-    });
+    const getInitialFormData = () => {
+        const today = new Date();
+        const appliedDate = today.toISOString().split('T')[0];
+        const followUp = new Date(today);
+        followUp.setDate(today.getDate() + 7);
+        const followUpDate = followUp.toISOString().split('T')[0];
+
+        return {
+            company_name: '',
+            role: '',
+            job_url: '',
+            status: 'applied',
+            applied_date: appliedDate,
+            follow_up_date: followUpDate,
+            resume: '',
+            notes: '',
+        };
+    };
+
+    const [formData, setFormData] = useState(getInitialFormData());
 
     useEffect(() => {
         fetchData();
@@ -69,7 +79,20 @@ const ApplicationsPage = () => {
     };
 
     const handleChange = (e) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
+        const { name, value } = e.target;
+        let updatedData = { ...formData, [name]: value };
+
+        // Automatically recalculate follow-up date if applied_date changes
+        if (name === 'applied_date' && value) {
+            const newAppliedDate = new Date(value);
+            if (!isNaN(newAppliedDate.getTime())) {
+                const followUp = new Date(newAppliedDate);
+                followUp.setDate(followUp.getDate() + 7);
+                updatedData.follow_up_date = followUp.toISOString().split('T')[0];
+            }
+        }
+
+        setFormData(updatedData);
     };
 
     const handleSubmit = async (e) => {
@@ -123,16 +146,7 @@ const ApplicationsPage = () => {
 
     const resetForm = () => {
         setEditingApp(null);
-        setFormData({
-            company_name: '',
-            role: '',
-            job_url: '',
-            status: 'applied',
-            applied_date: '',
-            follow_up_date: '',
-            resume: '',
-            notes: '',
-        });
+        setFormData(getInitialFormData());
     };
 
     const openNewModal = () => {
@@ -163,6 +177,20 @@ const ApplicationsPage = () => {
         const matchesStatus = statusFilter === 'All' || app.status.toLowerCase() === statusFilter.toLowerCase();
         return matchesSearch && matchesStatus;
     });
+
+    const glassInputStyle = {
+        padding: '0.85rem',
+        background: 'rgba(30, 30, 30, 0.4)',
+        border: '1px solid rgba(255, 255, 255, 0.1)',
+        borderRadius: '8px',
+        color: '#fff',
+        backdropFilter: 'blur(10px)',
+        width: '100%',
+        boxSizing: 'border-box',
+        marginBottom: '0.5rem',
+        marginTop: '0.2rem',
+        transition: 'all 0.2s ease',
+    };
 
     return (
         <div>
@@ -344,6 +372,7 @@ const ApplicationsPage = () => {
                         value={formData.company_name}
                         onChange={handleChange}
                         required
+                        style={glassInputStyle}
                     />
 
                     <Input
@@ -352,6 +381,7 @@ const ApplicationsPage = () => {
                         value={formData.role}
                         onChange={handleChange}
                         required
+                        style={glassInputStyle}
                     />
 
                     <Input
@@ -360,11 +390,12 @@ const ApplicationsPage = () => {
                         type="url"
                         value={formData.job_url}
                         onChange={handleChange}
+                        style={glassInputStyle}
                     />
 
                     <div className="form-group">
                         <label className="form-label">Status</label>
-                        <select name="status" value={formData.status} onChange={handleChange} className="input">
+                        <select name="status" value={formData.status} onChange={handleChange} className="input" style={glassInputStyle}>
                             <option value="applied">Applied</option>
                             <option value="hr_contacted">HR Contacted</option>
                             <option value="interview">Interview</option>
@@ -380,6 +411,7 @@ const ApplicationsPage = () => {
                         value={formData.applied_date}
                         onChange={handleChange}
                         required
+                        style={glassInputStyle}
                     />
 
                     <Input
@@ -388,11 +420,12 @@ const ApplicationsPage = () => {
                         type="date"
                         value={formData.follow_up_date}
                         onChange={handleChange}
+                        style={glassInputStyle}
                     />
 
                     <div className="form-group">
                         <label className="form-label">Resume</label>
-                        <select name="resume" value={formData.resume} onChange={handleChange} className="input">
+                        <select name="resume" value={formData.resume} onChange={handleChange} className="input" style={glassInputStyle}>
                             <option value="">None</option>
                             {resumes.map(resume => (
                                 <option key={resume.id} value={resume.id}>{resume.title}</option>
@@ -408,10 +441,11 @@ const ApplicationsPage = () => {
                             onChange={handleChange}
                             className="input"
                             rows="3"
+                            style={{ ...glassInputStyle, resize: 'vertical' }}
                         />
                     </div>
 
-                    <Button type="submit" variant="primary" style={{ width: '100%', marginTop: '1rem' }}>
+                    <Button type="submit" variant="primary" style={{ width: '100%', marginTop: '1rem', padding: '1rem', borderRadius: '8px', fontWeight: 'bold' }}>
                         {editingApp ? 'Update' : 'Create'} Application
                     </Button>
                 </form>
