@@ -179,16 +179,17 @@ const ApplicationsPage = () => {
     });
 
     const glassInputStyle = {
-        padding: '0.85rem',
+        padding: '0.6rem 0.8rem',
         background: 'rgba(30, 30, 30, 0.4)',
         border: '1px solid rgba(255, 255, 255, 0.1)',
-        borderRadius: '8px',
+        borderRadius: '6px',
         color: '#fff',
         backdropFilter: 'blur(10px)',
         width: '100%',
         boxSizing: 'border-box',
-        marginBottom: '0.5rem',
-        marginTop: '0.2rem',
+        marginBottom: '0',
+        marginTop: '0.25rem',
+        fontSize: '0.9rem',
         transition: 'all 0.2s ease',
     };
 
@@ -359,42 +360,75 @@ const ApplicationsPage = () => {
                 </div>
             </div>
 
-            {/* Edit/Create Modal */}
             <Modal
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
                 title={editingApp ? 'Edit Application' : 'New Application'}
+                style={{ padding: '1rem' }}
             >
-                <form onSubmit={handleSubmit}>
-                    <Input
-                        label="Company Name"
-                        name="company_name"
-                        value={formData.company_name}
-                        onChange={handleChange}
-                        required
-                        style={glassInputStyle}
-                    />
+                <form onSubmit={handleSubmit} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.4rem' }}>
 
-                    <Input
-                        label="Role"
-                        name="role"
-                        value={formData.role}
-                        onChange={handleChange}
-                        required
-                        style={glassInputStyle}
-                    />
+                    {/* Rows 1-3: Full Width Span */}
+                    <div style={{ gridColumn: 'span 2', marginBottom: '-0.3rem' }}>
+                        <Input
+                            label={<span style={{ fontSize: '0.8rem', marginBottom: '0' }}>Company Name</span>}
+                            name="company_name"
+                            value={formData.company_name}
+                            onChange={handleChange}
+                            required
+                            style={glassInputStyle}
+                        />
+                    </div>
 
-                    <Input
-                        label="Job URL"
-                        name="job_url"
-                        type="url"
-                        value={formData.job_url}
-                        onChange={handleChange}
-                        style={glassInputStyle}
-                    />
+                    <div style={{ gridColumn: 'span 2', marginBottom: '-0.3rem' }}>
+                        <Input
+                            label={<span style={{ fontSize: '0.8rem', marginBottom: '0' }}>Role</span>}
+                            name="role"
+                            value={formData.role}
+                            onChange={handleChange}
+                            required
+                            style={glassInputStyle}
+                        />
+                    </div>
 
-                    <div className="form-group">
-                        <label className="form-label">Status</label>
+                    <div style={{ gridColumn: 'span 2', marginBottom: '-0.3rem' }}>
+                        <Input
+                            label={<span style={{ fontSize: '0.8rem', marginBottom: '0' }}>Job URL</span>}
+                            name="job_url"
+                            type="url"
+                            value={formData.job_url}
+                            onChange={handleChange}
+                            style={glassInputStyle}
+                        />
+                    </div>
+
+                    {/* Row 4: Side-by-side Dates */}
+                    <div style={{ marginBottom: '-0.3rem' }}>
+                        <Input
+                            label={<span style={{ fontSize: '0.8rem', marginBottom: '0' }}>Applied Date</span>}
+                            name="applied_date"
+                            type="date"
+                            value={formData.applied_date}
+                            onChange={handleChange}
+                            required
+                            style={glassInputStyle}
+                        />
+                    </div>
+
+                    <div style={{ marginBottom: '-0.3rem' }}>
+                        <Input
+                            label={<span style={{ fontSize: '0.8rem', marginBottom: '0' }}>Follow-up Date</span>}
+                            name="follow_up_date"
+                            type="date"
+                            value={formData.follow_up_date}
+                            onChange={handleChange}
+                            style={glassInputStyle}
+                        />
+                    </div>
+
+                    {/* Row 5: Side-by-side Status & Resume */}
+                    <div className="form-group" style={{ marginBottom: '-0.3rem' }}>
+                        <label className="form-label" style={{ display: 'block', marginBottom: '0.1rem', fontSize: '0.8rem', fontWeight: '500' }}>Status</label>
                         <select name="status" value={formData.status} onChange={handleChange} className="input" style={glassInputStyle}>
                             <option value="applied">Applied</option>
                             <option value="hr_contacted">HR Contacted</option>
@@ -404,27 +438,8 @@ const ApplicationsPage = () => {
                         </select>
                     </div>
 
-                    <Input
-                        label="Applied Date"
-                        name="applied_date"
-                        type="date"
-                        value={formData.applied_date}
-                        onChange={handleChange}
-                        required
-                        style={glassInputStyle}
-                    />
-
-                    <Input
-                        label="Follow-up Date"
-                        name="follow_up_date"
-                        type="date"
-                        value={formData.follow_up_date}
-                        onChange={handleChange}
-                        style={glassInputStyle}
-                    />
-
-                    <div className="form-group">
-                        <label className="form-label">Resume</label>
+                    <div className="form-group" style={{ marginBottom: '-0.3rem' }}>
+                        <label className="form-label" style={{ display: 'block', marginBottom: '0.1rem', fontSize: '0.8rem', fontWeight: '500' }}>Resume</label>
                         <select name="resume" value={formData.resume} onChange={handleChange} className="input" style={glassInputStyle}>
                             <option value="">None</option>
                             {resumes.map(resume => (
@@ -433,19 +448,21 @@ const ApplicationsPage = () => {
                         </select>
                     </div>
 
-                    <div className="form-group">
-                        <label className="form-label">Notes</label>
+                    {/* Row 6: Full Width Notes */}
+                    <div className="form-group" style={{ gridColumn: 'span 2', marginBottom: 0 }}>
+                        <label className="form-label" style={{ display: 'block', marginBottom: '0.1rem', fontSize: '0.8rem', fontWeight: '500' }}>Notes</label>
                         <textarea
                             name="notes"
                             value={formData.notes}
                             onChange={handleChange}
                             className="input"
-                            rows="3"
+                            rows="2"
                             style={{ ...glassInputStyle, resize: 'vertical' }}
                         />
                     </div>
 
-                    <Button type="submit" variant="primary" style={{ width: '100%', marginTop: '1rem', padding: '1rem', borderRadius: '8px', fontWeight: 'bold' }}>
+                    {/* Full Width Submit Button */}
+                    <Button type="submit" variant="primary" style={{ gridColumn: 'span 2', width: '100%', marginTop: '0.2rem', padding: '0.6rem', borderRadius: '6px', fontWeight: 'bold' }}>
                         {editingApp ? 'Update' : 'Create'} Application
                     </Button>
                 </form>
