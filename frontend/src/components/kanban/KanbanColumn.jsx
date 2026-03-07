@@ -21,14 +21,16 @@ const KanbanColumn = ({ status, label, color, applications }) => {
 
             <div
                 ref={setNodeRef}
-                className={`column-content ${isOver ? 'dragging-over' : ''}`}
+                className={`column-content flex flex-col flex-1 overflow-y-auto gap-3 ${isOver ? 'dragging-over' : ''}`}
             >
                 {applications.map(application => (
-                    <ApplicationCard key={application.id} application={application} />
+                    <div key={application.id} className="shrink-0 flex-shrink-0">
+                        <ApplicationCard application={application} />
+                    </div>
                 ))}
 
                 {applications.length === 0 && (
-                    <div className="empty-column">
+                    <div className="empty-column shrink-0 flex-shrink-0">
                         <p>No applications</p>
                     </div>
                 )}

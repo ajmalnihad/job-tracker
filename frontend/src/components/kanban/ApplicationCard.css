@@ -116,3 +116,17 @@
     color: #ffffff;
     text-decoration: none;
 }
+
+/* Expanded Card Details Transition */
+.card-expanded-details {
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card-expanded-details.open {
+    max-height: 100px;
+    /* Provides enough vertical space for the dates and button */
+    opacity: 1;
+}
