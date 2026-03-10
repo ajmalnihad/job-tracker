@@ -24,7 +24,10 @@ class Application(models.Model):
     job_url = models.URLField(blank=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='applied')
     applied_date = models.DateField()
+
     follow_up_date = models.DateField(null=True, blank=True)
+    is_notified = models.BooleanField(default=False)
+    
     resume = models.ForeignKey(Resume, on_delete=models.SET_NULL, null=True, blank=True, related_name='applications')
     notes = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)

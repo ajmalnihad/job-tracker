@@ -33,8 +33,18 @@ axiosInstance.interceptors.response.use(
     async (error) => {
         const originalRequest = error.config;
 
-        // If error is 401 and we haven't retried yet
+        // If error is 401 and we haven't retried yet and it's not the refresh endpoint itself
         if (error.response?.status === 401 && !originalRequest._retry) {
+            
+            // KILL SWITCH: If the refresh token request itself fails with 401, logout immediately to prevent infinite loop
+            if (originalRequest.url === '/api/auth/refresh/') {
+                localStorage.removeItem(ACCESS_TOKEN_KEY);
+                localStorage.removeItem(REFRESH_TOKEN_KEY);
+                localStorage.removeItem('user_data');
+                window.location.href = '/login';
+                return Promise.reject(error);
+            }
+
             originalRequest._retry = true;
 
             const refreshToken = localStorage.getItem(REFRESH_TOKEN_KEY);

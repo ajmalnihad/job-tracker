@@ -18,6 +18,12 @@ from django.utils import timezone
 from datetime import timedelta
 from django.db.models import Q
 
+from rest_framework.decorators import api_view, permission_classes, authentication_classes
+from rest_framework.permissions import AllowAny
+from rest_framework.response import Response
+from django.conf import settings
+from tasks.email_tasks import check_follow_ups
+
 
 class ApplicationViewSet(viewsets.ModelViewSet):
     """
@@ -85,3 +91,26 @@ class ApplicationViewSet(viewsets.ModelViewSet):
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+
+
+@api_view(['GET'])
+@authentication_classes([])  # 🛑 CRITICAL FIX: JWT Authentication പൂർണ്ണമായും ഒഴിവാക്കുന്നു
+@permission_classes([AllowAny]) # 🛑 Permissions ഒഴിവാക്കുന്നു
+def trigger_daily_alerts(request):
+    """
+    Cron Job വഴി മാത്രം വിളിക്കാൻ കഴിയുന്ന സീക്രട്ട് API. (No JWT allowed here)
+    """
+    # മാറ്റം: 'Authorization: Bearer' എന്നതിന് പകരം 'X-Cron-Secret' എന്ന കസ്റ്റം ഹെഡർ ഉപയോഗിക്കുന്നു
+    secret_token = request.headers.get('X-Cron-Secret')
+    expected_token = settings.CRON_SECRET_KEY
+    
+    # ഹാക്കർമാരെ തടയാനുള്ള ചെക്ക്
+    if not secret_token or secret_token != expected_token:
+        print(f"Failed Cron Attempt! Received: {secret_token}") # ലോഗിൽ കാണാൻ
+        return Response({"error": "Unauthorized Cron Attempt"}, status=401)
+        
+    result = check_follow_ups()
+    return Response({"message": result}, status=200)

@@ -13,6 +13,7 @@ urlpatterns = [
     path('api/applications/', include('applications.urls')),
     path('api/resumes/', include('resumes.urls')),
     path('api/analytics/', include('analytics.urls')),
+    path('', include('core.urls')),
 ]
 
 # Serve media files in development

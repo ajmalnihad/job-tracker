@@ -222,3 +222,17 @@ if not DEBUG:
     SECURE_HSTS_SECONDS = 31536000        # 1 year
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     SECURE_HSTS_PRELOAD = True
+
+# ---------------------------------------------------------------------------
+# Google Generative AI
+# ---------------------------------------------------------------------------
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+
+# ---------------------------------------------------------------------------
+# Custom API Security
+# ---------------------------------------------------------------------------
+CRON_SECRET_KEY = os.getenv('CRON_SECRET_KEY', 'default-insecure-cron-key')

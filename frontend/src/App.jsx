@@ -14,6 +14,8 @@ import ApplicationsPage from './pages/ApplicationsPage';
 import ResumeManager from './pages/ResumeManager';
 import Settings from './pages/Settings';
 import './styles/index.css';
+import InterviewSetup from './pages/InterviewSetup';
+import InterviewChat from './pages/InterviewChat';
 
 function App() {
     return (
@@ -66,6 +68,24 @@ function App() {
                         element={
                             <ProtectedRoute>
                                 <Settings />
+                            </ProtectedRoute>
+                        }
+                    />
+
+                    <Route
+                        path="/mock-interview"
+                        element={
+                            <ProtectedRoute>
+                                <InterviewSetup />
+                            </ProtectedRoute>
+                        }
+                    />
+
+                    <Route
+                        path="/interview-chat"
+                        element={
+                            <ProtectedRoute>
+                                <InterviewChat />
                             </ProtectedRoute>
                         }
                     />

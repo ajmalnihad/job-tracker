@@ -4,8 +4,8 @@
  */
 
 // Define API Base URL. Update this depending on Local vs Live environment.
-const API_BASE_URL = 'http://localhost:8000';
-// const API_BASE_URL = 'https://job-tracker-iwj8.onrender.com';
+// const API_BASE_URL = 'http://localhost:8000';
+const API_BASE_URL = 'https://job-tracker-iwj8.onrender.com';
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.action === 'SAVE_JOB') {

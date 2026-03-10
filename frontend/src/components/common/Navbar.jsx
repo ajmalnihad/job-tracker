@@ -28,6 +28,7 @@ const Navbar = () => {
                     <Link to="/applications" className="nav-link">Applications</Link>
                     <Link to="/kanban" className="nav-link">Kanban</Link>
                     <Link to="/resumes" className="nav-link">Resumes</Link>
+                    <Link to="/mock-interview" className="nav-link text-purple-400 drop-shadow-md" style={{ textShadow: "0 0 8px rgba(168, 85, 247, 0.5)" }}>AI Interview</Link>
                     <Link to="/settings" className="nav-link">Settings</Link>
                 </div>
 
