@@ -12,5 +12,5 @@ router.register(r'', ApplicationViewSet, basename='application')
 
 urlpatterns = [
     path('', include(router.urls)),
-    path('api/alerts/trigger-daily/', views.trigger_daily_alerts, name='trigger_daily_alerts'),
+    path('alerts/trigger-daily/', views.trigger_daily_alerts, name='trigger_daily_alerts'),
 ]

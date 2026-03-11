@@ -1,96 +1,67 @@
-﻿"""
-Email reminder functions for job application follow-ups.
-Optimized for Production via external Web Cron jobs.
-"""
-
-import logging
-from django.core.mail import send_mail
+﻿from django.core.mail import send_mail
 from django.conf import settings
 from datetime import date
 from applications.models import Application
 
-# പ്രൊഡക്ഷനിൽ എററുകൾ ട്രാക്ക് ചെയ്യാൻ ലോഗർ ഉപയോഗിക്കുക
-logger = logging.getLogger(__name__)
-
-def send_follow_up_reminder(application_id):
+def send_follow_up_reminder(application):
     """
-    Send follow-up email reminder for a specific application 
-    and mark it as notified upon success.
+    Returns a tuple: (is_success: bool, message: str)
     """
-    try:
-        application = Application.objects.get(id=application_id)
-        user = application.user
+    user = application.user
+    
+    # Brutal Validation: യൂസർക്ക് ഇമെയിൽ ഇല്ലെങ്കിൽ അവിടെ വെച്ച് തന്നെ ബ്ലോക്ക് ചെയ്യുക
+    if not user.email:
+        return False, f"User '{user.username}' has no email address."
 
-        subject = f'Action Required: Follow-up Reminder for {application.company_name} ({application.role})'
-        message = f"""
-Hi {user.username},
+    subject = f'Follow-up Reminder: {application.company_name} - {application.role}'
+    message = f"""
+Hi {user.first_name or user.username},
 
-This is an automated reminder to follow up on your job application today:
+This is a reminder to follow up on your application:
 
   Company: {application.company_name}
   Role:    {application.role}
   Applied: {application.applied_date}
   Status:  {application.get_status_display()}
 
-Notes: {application.notes or 'No notes provided.'}
+Notes: {application.notes or 'No notes'}
 
-Log in to your Job Tracker dashboard to update the status or add new notes.
-
-Best regards,
-Job Tracker Automated System
+Good luck with your job search!
 """
 
-        # ഇമെയിൽ അയക്കുന്നു
+    try:
         send_mail(
             subject,
             message,
             settings.DEFAULT_FROM_EMAIL,
             [user.email],
-            fail_silently=False, # എറർ വന്നാൽ നമ്മൾ അറിയണം, അതുകൊണ്ട് False
+            fail_silently=False,
         )
-        
-        # BRUTAL FIX: ഇമെയിൽ സക്സസ് ആയാൽ മാത്രം is_notified മാറ്റുക!
-        # ഇത് ചെയ്തില്ലെങ്കിൽ യൂസർക്ക് വീണ്ടും വീണ്ടും മെയിൽ പോകും (Spam).
-        application.is_notified = True
-        application.save()
-
-        return True, f"Success: Email sent to {user.email} for application {application_id}"
-
-    except Application.DoesNotExist:
-        return False, f"Error: Application {application_id} not found in database."
+        return True, f"Sent to {user.email}"
     except Exception as e:
-        return False, f"Error: Failed to send email for application {application_id}. Reason: {str(e)}"
-
+        return False, f"SMTP Error: {str(e)}"
 
 def check_follow_ups():
-    """
-    Check for applications with follow_up_date = today and is_notified = False.
-    Called by the secure API endpoint via cron-job.org.
-    """
     today = date.today()
-    
-    # THE CRITICAL FILTER: is_notified=False ഉള്ളവ മാത്രം എടുക്കുക.
-    applications_to_follow_up = Application.objects.filter(
-        follow_up_date=today, 
-        is_notified=False
-    )
+    applications_to_follow_up = Application.objects.filter(follow_up_date=today, is_notified=False)
 
     success_count = 0
-    failure_count = 0
+    failed_count = 0
+    error_logs = []
 
-    # ലൂപ്പ് ചെയ്ത് ഓരോന്നിനും ഇമെയിൽ അയക്കുന്നു
     for app in applications_to_follow_up:
-        success, message = send_follow_up_reminder(app.id)
+        is_success, msg = send_follow_up_reminder(app)
         
-        if success:
+        if is_success:
+            app.is_notified = True
+            app.save()
             success_count += 1
-            logger.info(message)
         else:
-            failure_count += 1
-            logger.error(message)
+            failed_count += 1
+            error_logs.append(f"App ID {app.id}: {msg}")
 
-    # അന്തിമ റിപ്പോർട്ട് ഉണ്ടാക്കുന്നു
-    result_message = f"Cron execution complete for {today}: Sent {success_count} reminders, {failure_count} failed."
-    logger.info(result_message)
-    
-    return result_message
+    # കൃത്യമായ റിപ്പോർട്ട് തിരികെ നൽകുന്നു
+    return {
+        "message": f"Cron execution complete for {today}: Sent {success_count} reminders, {failed_count} failed.",
+        "errors": error_logs
+    }
