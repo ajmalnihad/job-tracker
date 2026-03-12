@@ -2,27 +2,30 @@
 Application viewsets with CRUD operations and filtering.
 """
 
+import logging
+
 from rest_framework import viewsets, status
-from rest_framework.decorators import action
+from rest_framework.decorators import (
+    action,
+    api_view,
+    authentication_classes,
+    permission_classes,
+)
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
+from django.conf import settings
+
 from .models import Application
 from .serializers import (
     ApplicationSerializer,
     ApplicationListSerializer,
-    ApplicationStatusUpdateSerializer
+    ApplicationStatusUpdateSerializer,
 )
 from .permissions import IsOwner
 from .filters import ApplicationFilter
-from django.utils import timezone
-from datetime import timedelta
-from django.db.models import Q
-
-from rest_framework.decorators import api_view, permission_classes, authentication_classes
-from rest_framework.permissions import AllowAny
-from rest_framework.response import Response
-from django.conf import settings
 from tasks.email_tasks import check_follow_ups
+
+logger = logging.getLogger(__name__)
 
 
 class ApplicationViewSet(viewsets.ModelViewSet):
@@ -56,7 +59,7 @@ class ApplicationViewSet(viewsets.ModelViewSet):
         tomorrow = today + datetime.timedelta(days=1)
         
         try:
-            # As explicitly requested, try strict __date extraction (works if DB field is DateTimeField)
+            # Try strict __date extraction (works if DB field is DateTimeField)
             applications = Application.objects.filter(
                 user=request.user,
                 follow_up_date__date__in=[today, tomorrow]
@@ -66,7 +69,7 @@ class ApplicationViewSet(viewsets.ModelViewSet):
             # Evaluate to catch FieldError early
             _ = len(applications)
         except Exception:
-            # Fallback natively for models.DateField which doesn't support __date transform but matches cleanly via __in
+            # Fallback for models.DateField which matches cleanly via __in
             applications = Application.objects.filter(
                 user=request.user,
                 follow_up_date__in=[today, tomorrow]
@@ -93,24 +96,29 @@ class ApplicationViewSet(viewsets.ModelViewSet):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-
-
+# ── Cron Job Endpoint (No JWT) ───────────────────────────────────────────────
 
 @api_view(['GET'])
-@authentication_classes([])  # 🛑 CRITICAL FIX: JWT Authentication പൂർണ്ണമായും ഒഴിവാക്കുന്നു
-@permission_classes([AllowAny]) # 🛑 Permissions ഒഴിവാക്കുന്നു
+@authentication_classes([])   # Bypass JWT — cron jobs have no bearer token
+@permission_classes([AllowAny])
 def trigger_daily_alerts(request):
     """
-    Cron Job വഴി മാത്രം വിളിക്കാൻ കഴിയുന്ന സീക്രട്ട് API. (No JWT allowed here)
+    Endpoint callable ONLY by an external cron service.
+    Authenticated via the X-Cron-Secret header, NOT via JWT.
     """
-    # മാറ്റം: 'Authorization: Bearer' എന്നതിന് പകരം 'X-Cron-Secret' എന്ന കസ്റ്റം ഹെഡർ ഉപയോഗിക്കുന്നു
     secret_token = request.headers.get('X-Cron-Secret')
     expected_token = settings.CRON_SECRET_KEY
-    
-    # ഹാക്കർമാരെ തടയാനുള്ള ചെക്ക്
+
     if not secret_token or secret_token != expected_token:
-        print(f"Failed Cron Attempt! Received: {secret_token}") # ലോഗിൽ കാണാൻ
-        return Response({"error": "Unauthorized Cron Attempt"}, status=401)
-        
+        logger.warning(
+            "Unauthorized cron attempt from %s. Token: %s",
+            request.META.get('REMOTE_ADDR', 'unknown'),
+            secret_token,
+        )
+        return Response(
+            {"error": "Unauthorized Cron Attempt"},
+            status=status.HTTP_401_UNAUTHORIZED,
+        )
+
     result = check_follow_ups()
-    return Response({"message": result}, status=200)
+    return Response(result, status=status.HTTP_200_OK)
