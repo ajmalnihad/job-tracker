@@ -1,4 +1,4 @@
-﻿"""
+"""
 Django settings for backend project.
 Production-ready configuration with environment-based settings.
 """
@@ -203,13 +203,13 @@ CORS_EXPOSE_HEADERS = ['content-disposition']
 # ---------------------------------------------------------------------------
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 465
-EMAIL_USE_SSL = True          # 🛑 നിർബന്ധമായും True
-EMAIL_USE_TLS = False         # 🛑 നിർബന്ധമായും False
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_USE_SSL = False
 EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
 DEFAULT_FROM_EMAIL = os.getenv('EMAIL_HOST_USER')
-EMAIL_TIMEOUT = 10            # SMTP ഹാങ് ആകാതിരിക്കാൻ
+EMAIL_TIMEOUT = 10
 # ---------------------------------------------------------------------------
 # Production security hardening (applied when DEBUG=False)
 # ---------------------------------------------------------------------------

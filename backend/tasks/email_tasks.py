@@ -7,6 +7,8 @@ caused by per-email TCP+TLS handshakes.
 """
 
 import logging
+import smtplib
+import socket
 from datetime import date
 
 from django.conf import settings
@@ -101,29 +103,46 @@ def check_follow_ups():
                 success_count += 1
                 logger.info("Sent reminder to %s (App ID %d).", user.email, app.id)
 
+            except (smtplib.SMTPException, socket.error) as exc:
+                failed_count += 1
+                msg = f"App ID {app.id} (user '{user.username}'): Network/SMTP drop: {exc}"
+                error_logs.append(msg)
+                logger.error("SMTP network failure mid-batch: %s", msg)
+                # If network drops, subsequent emails will also fail. Break loop.
+                break
+
             except Exception as exc:
                 failed_count += 1
                 msg = f"App ID {app.id} (user '{user.username}'): {exc}"
                 error_logs.append(msg)
                 logger.error("SMTP failure — %s", msg)
-                # Continue to the next application; never kill the batch.
+                # Continue if it's an isolated issue like an invalid email format
 
-    except Exception as exc:
-        # Connection-level failure (e.g. SMTP server unreachable)
-        logger.critical("Failed to open SMTP connection: %s", exc)
+    except (smtplib.SMTPException, socket.error) as exc:
+        # Connection-level failure (e.g. SMTP connection timeout, unreachable network)
+        logger.critical("Failed to open or maintain SMTP connection: %s", exc)
         return {
             "date": str(today),
             "total_found": total_found,
             "sent": success_count,
             "failed": total_found - success_count,
-            "errors": [f"SMTP connection failure: {exc}"],
+            "errors": [f"SMTP network failure: {exc}"],
+        }
+    except Exception as exc:
+        logger.critical("Unexpected error in mass mailer: %s", exc)
+        return {
+            "date": str(today),
+            "total_found": total_found,
+            "sent": success_count,
+            "failed": total_found - success_count,
+            "errors": [f"Unexpected error: {exc}"],
         }
     finally:
-        # Always close the connection, even if an error occurred
+        # Always close the connection safely, even if network dropped
         try:
             connection.close()
-        except Exception:
-            logger.warning("Failed to close SMTP connection gracefully.")
+        except Exception as close_exc:
+            logger.warning("Failed to close SMTP connection gracefully: %s", close_exc)
 
     logger.info(
         "Cron %s complete: %d sent, %d failed out of %d.",
